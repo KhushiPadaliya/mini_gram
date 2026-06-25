@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mini Gram Chat</title>
+</head>
+<body>
+
+    <h2>Mini Gram Chat</h2>
+
+    <input id="senderId" placeholder="Sender ID">
+    <br><br>
+
+    <input id="receiverId" placeholder="Receiver ID">
+    <br><br>
+
+    <input id="messageInput" placeholder="Enter message">
+    <button onclick="sendMessage()">Send</button>
+
+    <h3>Messages:</h3>
+    <div id="messages"></div>
+
+    <script src="http://localhost:3000/socket.io/socket.io.js"></script>
+
+    <script>
+        const socket = io("http://localhost:3000");
+
+        socket.on("connect", () => {
+            console.log("Connected to server:", socket.id);
+        });
+
+        function sendMessage() {
+            const sender_id = document.getElementById("senderId").value;
+            const receiver_id = document.getElementById("receiverId").value;
+            const message = document.getElementById("messageInput").value;
+
+            socket.emit("send_message", {
+                sender_id,
+                receiver_id,
+                message
+            });
+
+            document.getElementById("messageInput").value = "";
+        }
+
+        socket.on("receive_message", (data) => {
+            const messagesDiv = document.getElementById("messages");
+
+            messagesDiv.innerHTML += `
+                <p><b>User ${data.sender_id}:</b> ${data.message}</p>
+            `;
+        });
+    </script>
+
+</body>
+</html>

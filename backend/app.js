@@ -2,6 +2,9 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import authRoutes from "./routes/auth.routes.js";
+import followRoutes from "./routes/follow.routes.js";
+
+import postRoutes from "./routes/post.routes.js";
 
  dotenv.config();
 
@@ -15,8 +18,19 @@ import authRoutes from "./routes/auth.routes.js";
 
  })
  app.use("/api/auth",authRoutes); 
+ app.use("/api/posts", postRoutes);
+ app.use("/api/users", followRoutes);
 
- const PORT = process.env.PORT||3000;
-    app.listen(PORT, ()=>{
-        console.log(`server is running on port ${PORT}`);
-    });
+//  const PORT = process.env.PORT||3000;
+//     app.listen(PORT, ()=>{
+//         console.log(`server is running on port ${PORT}`);
+//     });
+
+export default app;
+
+// greet() 
+// function greet(){
+//     console.log("helloe");
+// }
+
+ 

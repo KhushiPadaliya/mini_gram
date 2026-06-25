@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Feed</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="box">
+    <h2>Mini Gram Feed</h2>
+
+    <p id="welcome"></p>
+
+    <textarea id="caption" placeholder="Write your post..."></textarea>
+    <button onclick="createPost()">Post</button>
+
+    <br><br>
+
+    <button onclick="logout()">Logout</button>
+    <p><a href="chat.html">Go to Chat</a></p>
+    <a href="profile.html" class="chat-btn"> My Profile</a>
+
+    <h3>All Posts</h3>
+    <div id="posts"></div>
+</div>
+
+<script>
+    const token = localStorage.getItem("token");
+    const user_id = localStorage.getItem("user_id");
+    const username = localStorage.getItem("username");
+
+    if (!token) {
+        window.location.href = "login.html";
+    }
+
+    document.getElementById("welcome").innerText = "Welcome, " + username;
+
+    async function createPost() {
+        const caption = document.getElementById("caption").value;
+
+        const res = await fetch("http://localhost:3000/api/posts", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": token
+            },
+            body: JSON.stringify({
+                user_id: user_id,
+                caption: caption
+            })
+        });
+
+        const data = await res.json();
+        alert(data.message);
+
+        document.getElementById("caption").value = "";
+        getPosts();
+    }
+
+    async function getPosts() {
+        const res = await fetch("http://localhost:3000/api/posts");
+        const data = await res.json();
+
+        const postsDiv = document.getElementById("posts");
+        postsDiv.innerHTML = "";
+
+        data.posts.forEach(post => {
+            postsDiv.innerHTML += `
+                <div class="post">
+                    <h4>${post.username}</h4>
+                    <p>${post.caption}</p>
+                    <small>${post.created_at}</small>
+                    <br><br>
+
+                    <button onclick="likePost(${post.id})">Like</button>
+
+                    <input id="comment-${post.id}" placeholder="Add comment">
+                    <button onclick="addComment(${post.id})">Comment</button>
+
+                    <button onclick="deletePost(${post.id})">Delete</button>
+                </div>
+            `;
+        });
+    }
+
+    async function likePost(postId) {
+        const res = await fetch(`http://localhost:3000/api/posts/${postId}/like`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": token
+            },
+            body: JSON.stringify({
+                user_id: user_id
+            })
+        });
+
+        const data = await res.json();
+        alert(data.message);
+    }
+
+    async function addComment(postId) {
+        const commentText = document.getElementById(`comment-${postId}`).value;
+
+        const res = await fetch(`http://localhost:3000/api/posts/${postId}/comments`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": token
+            },
+            body: JSON.stringify({
+                user_id: user_id,
+                comment: commentText
+            })
+        });
+
+        const data = await res.json();
+        alert(data.message);
+    }
+
+    async function deletePost(postId) {
+        const res = await fetch(`http://localhost:3000/api/posts/${postId}`, {
+            method: "DELETE",
+            headers: {
+                "Authorization": token
+            }
+        });
+
+        const data = await res.json();
+        alert(data.message);
+        getPosts();
+    }
+
+    function logout() {
+        localStorage.clear();
+        window.location.href = "login.html";
+    }
+
+    getPosts();
+</script>
+
+</body>
+</html>
